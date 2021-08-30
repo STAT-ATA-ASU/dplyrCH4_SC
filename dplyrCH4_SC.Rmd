@@ -1,6 +1,7 @@
 ---
 title: "`summarize` and the pipe operator (`%>%`)"
 date: 'Last compiled: `r format(Sys.time(), "%b %d, %Y")`'
+author: "Your Name"
 output:
   html_document:
     df_print: paged
