@@ -1,0 +1,233 @@
+---
+title: "`summarize` and the pipe operator (`%>%`)"
+date: 'Last compiled: `r format(Sys.time(), "%b %d, %Y")`'
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r, label = "SETUP", echo = FALSE, results= 'hide', message = FALSE, warning = FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.align = "center", fig.width = 4, fig.height = 4, message = FALSE, warning = FALSE)
+library(dplyr)
+library(hflights)
+library(scales)
+# Convert the hflights data.frame into a hflights tbl
+hflights <- tbl_df(hflights)
+# Create a random subset of size 10,000 to work with
+set.seed(123)
+train <- sample(227496, 10000)
+hflights <- hflights[train, ]
+# Create the object carriers, containing only the UniqueCarrier variable of hflights
+carriers <- hflights$UniqueCarrier
+# Both the dplyr and hflights packages are loaded into workspace
+lut <- c("AA" = "American", "AS" = "Alaska", "B6" = "JetBlue", "CO" = "Continental", 
+         "DL" = "Delta", "OO" = "SkyWest", "UA" = "United", "US" = "US_Airways", 
+         "WN" = "Southwest", "EV" = "Atlantic_Southeast", "F9" = "Frontier", 
+         "FL" = "AirTran", "MQ" = "American_Eagle", "XE" = "ExpressJet", 
+         "YV" = "Mesa")
+
+# Use lut to translate the UniqueCarrier column of hflights
+hflights$UniqueCarrier <- lut[hflights$UniqueCarrier]
+lut <- c("A" = "carrier", "B" = "weather", "C" = "FFA", 
+         "D" = "security", "E" = "not cancelled")
+
+# Use the lookup table to create a vector of code labels. 
+# Assign the vector to the CancellationCode column of hflights
+hflights$CancellationCode <- lut[hflights$CancellationCode]
+```
+
+_________________
+
+## The syntax of summarize
+
+`summarize()`, the last of the 5 verbs, follows the same syntax as `mutate()`, but the resulting dataset consists of a single row instead of an entire new column in the case of `mutate()`. Below, a typical `summarize()` function is repeated to show the syntax, without going into detail on all arguments:
+
+```{r, eval = FALSE}
+summarize(data, sumvar = sum(A), avgvar = avg(B))
+```
+
+In contrast to the four other data manipulation functions, `summarize()` does not return a copy of the dataset it is summarizing; instead, it builds a new dataset that contains only the summarzing statistics.
+
+## Instructions
+
+* Use `summarize()` to further explore `hflights`. Determine the shortest distance flown (save this as a variable named `min_dist`) and the longest distance flown (save this as a variable named `max_dist`). Save your solution to variable `s1`.
+
+
+```{r}
+# Your code goes here
+# Determine the shortest and longest distance flown and save statistics to 
+# min_dist and max_dist resp.
+
+
+```
+
+* Calculate the longest `Distance` for diverted flights, and save this as a variable named `max_div`. You will need one of the four other verbs to do this! Do this in a one-liner and save the result to `s2`.
+
+```{r}
+# Your code goes here
+# Determine the longest distance for diverted flights, save statistic to max_div. 
+# Use a one-liner!
+
+
+```
+
+## Aggregate functions
+
+You can use any function you like in `summarize()`, so long as the function can take a vector of data and return a single number. `R` contains many aggregating functions, as `dplyr` calls them. Here are some of the most useful:
+
+* `min(x)` - minimum value of vector `x`.
+* `max(x)` - maximum value of vector `x`.
+* `mean(x)` - mean value of vector `x`.
+* `median(x)` - median value of vector `x`.
+* `quantile(x, p)` - pth quantile of vector `x`.
+* `sd(x)` - standard deviation of vector `x`.
+* `var(x)` - variance of vector `x`.
+* `IQR(x)` - Inter Quartile Range (IQR) of vector `x`.
+* `diff(range(x))` - total range of vector `x`.
+
+## Instructions
+
+* Remove rows that have `NA`'s in the arrival delay column and save the resulting dataset to `temp1`. Then create a table with the following variables (and variable names): the minimum arrival delay (`earliest`), the average arrival delay (`average`), the longest arrival delay (`latest`), and the standard deviation for arrival delays (`sd`). Save this `data.frame` in the variable `s1`.
+
+```{r}
+# Your code goes here
+
+
+```
+
+Filter `hflights` such that only rows that have no `NA` `TaxiIn` and no `NA` `TaxiOut` are kept; save this temporary result to `temp2`. Then create a `data.frame` using `summarize()`, with one variable, `max_taxi_diff` that shows the biggest absolute difference in time between `TaxiIn` and `TaxiOut` for a single flight.
+
+```{r}
+# Your code goes here
+# Calculate the maximum taxiing difference for flights that have taxi data available
+
+
+```
+
+## `dplyr` aggregate functions
+
+`dplyr` provides several helpful aggregate functions of its own, in addition to the ones that are already defined in `R`. These include:
+
+* `first(x)` - The first element of vector `x`.
+* `last(x)` - The last element of vector `x`.
+* `nth(x, n)` - The nth element of vector `x`.
+* `n()` - The number of rows in the data.frame or group of observations that `summarize()` describes.
+* `n_distinct(x)` - The number of unique values in vector `x`.
+
+Next to these dplyr-specific functions, you can also turn a logical test into an aggregating function with `sum()` or `mean()`. A logical test returns a vector of `TRUE`'s and `FALSE`'s. When you apply `sum()` or `mean()` to such a vector, `R` coerces each `TRUE` to a 1 and each `FALSE` to a 0. This allows you to find the total number or proportion of observations that passed the test, respectively.
+
+## Instructions
+
+* Create a table with the following variables (and variable names): the total number of observations in `hflights` (`n_obs`), the total number of carriers that appear in `hflights` (`n_carrier`), the total number of destinations that appear in `hflights` (`n_dest`), and the destination of the flight that appears in the 100th row of `hflights` (`dest100`). Save the result to `s1`.
+
+```{r}
+# Your code goes here
+# Calculate the summarizing statistics of hflights
+
+
+```
+
+* Keep all of the flights in `hflights` flown by American Airlines ("American"), and assign the result to `aa`. Then calculate the total number of flights flown by American Airlines (`n_flights`), the total number of cancelled flights (`n_canc`), the percentage of cancelled flights (`p_canc`), and the average arrival delay of the flights whose delay does not equal `NA` (`avg_delay`). Store the final result in `s2`.
+
+```{r}
+# Your code goes here
+# Calculate the summarizing statistics for flights flown by 
+# American Airlines (carrier code "American")
+
+
+```
+
+## Overview of syntax
+
+The video explained the use and functionality of the `%>%`, but let's make sure you got the point. The following two statements are completely analogous:
+
+```{r, eval = FALSE}
+mean(c(1, 2, 3, NA), na.rm = TRUE)
+c(1, 2, 3, NA) %>% mean(na.rm = TRUE)
+```
+
+The `%>%` operator allows you to extract the first argument of a function from the arguments list and put it in front of it, thus solving the Dagwood sandwich problem.
+
+## Instructions
+
+Use `dplyr` functions and the pipe operator to transform the following English sentences into `R` code:
+
+* Take the `hflights` data set and then …
+* Add a variable named `diff` that is the result of subtracting `TaxiIn` from `TaxiOut`, and then …
+* Pick all of the rows whose `diff` value does not equal `NA`, and then …
+* Summarize the data set with a value named `avg` that is the mean `diff` value.
+
+Store the result in the variable `p`.
+
+```{r}
+# Write the 'piped' version of the English sentences.
+
+
+```
+
+## Drive or fly? Part 1 of 2
+
+You can answer sophisticated questions by combining the verbs of `dplyr`. Over the next few exercises you will examine whether it sometimes makes sense to drive instead of fly. You will begin by making a data set that contains relevant variables. Then, you will find flights whose equivalent average velocity is lower than the velocity when traveling by car.
+
+## Instructions
+
+* Define a data set named `d` that contains just the `Dest`, `UniqueCarrier`, `Distance`, and `ActualElapsedTime` columns of `hflights` as well as two additional variables: `RealTime` and `mph.RealTime` should equal the actual elapsed time plus 100 minutes. This will be an estimate of how much time a person spends getting from point A to point B while flying, including getting to the airport, security checks, etc. `mph` will be the miles per hour that a person on the flight traveled based on the `RealTime` of the flight.
+
+```{r}
+# Your code goes here
+# Part 1, concerning the selection and creation of columns
+
+
+```
+
+* On many highways you can drive at 70 mph. Continue with `d` to calculate the following variables: `n_less`, the number of flights whose `mph` value does not equal `NA` that traveled at less than 70 mph in real time; `n_dest`, the number of destinations that were traveled to at less than 70 mph; `min_dist`, the minimum distance of these flights; `max_dist`, the maximum distance of these flights.
+
+```{r}
+# Your code goes here
+# Part 2, concerning flights that had an actual average speed of < 70 mph.
+
+
+```
+
+## Drive or fly? Part 2 of 2
+
+The previous exercise suggested that some flights might be less efficient than driving in terms of speed. But is speed all that matters? Flying imposes burdens on a traveler that driving does not. For example, airplane tickets are very expensive. Air travelers also need to limit what they bring on their trip and arrange for a pick up or a drop off. Given these burdens we might demand that a flight provide a large speed advantage over driving.
+
+## Instructions
+
+Let's define preferable flights as flights that are 150% faster than driving, i.e. that travel 105 mph or greater in real time. Also, assume that cancelled or diverted flights are less preferable than driving.
+
+Write an adapted version of the solution to the previous exercise in an all-in-one fashion (i.e. in a single expression without intermediary variables, using `%>%`) to find:
+
+* `n_non` - the number of non-preferable flights in `hflights`,
+* `p_non` - the percentage of non-preferable flights in `hflights`,
+* `n_dest` - the number of destinations that non-preferable flights traveled to,
+* `min_dist` - the minimum distance that non-preferable flights traveled,
+* `max_dist` - the maximum distance that non-preferable flights traveled.
+
+To maintain readability in this advanced exercise, start your operations with a `select()` function to retain only the five columns that will be needed for the subsequent calculation steps.
+
+```{r}
+# Your code goes here
+
+
+```
+
+## Advanced piping exercises
+
+Because piping is a very powerful and commonly used feature, you are challenged with one more exercise. Become a piping master!
+
+## Instructions
+
+How many flights were overnight flights (flights whose arrival time is earlier than their departed time). Do not count `NA` values! Use `summarize()` with the `n()` function. The resulting data frame should contain a column named `n`.
+
+```{r}
+# Your code goes here
+# Count the number of overnight flights
+
+
+```
+
+________________
